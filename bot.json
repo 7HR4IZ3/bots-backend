@@ -1,0 +1,105 @@
+{
+  "drivers": [
+    {
+      "name": "web",
+      "default": true,
+      "driver": "playwright",
+      "config": {
+        "browser": {
+          "name": "chrome",
+          "config": {
+            "executable_path": null,
+            "channel": null,
+            "args": [],
+            "ignore_default_args": [],
+            "handle_sigint": true,
+            "handle_sigterm": true,
+            "handle_sighup": true,
+            "timeout": 0,
+            "env": {},
+            "headless": true,
+            "devtools": true,
+            "proxy": null,
+            "downloads_path": null,
+            "slow_mo": null,
+            "traces_dir": null,
+            "chromium_sandbox": false,
+            "firefox_user_prefs": {}
+          }
+        }
+      }
+    },
+    {
+      "name": "notify",
+      "driver": "notification",
+      "config": {
+        "api_key": "..."
+      }
+    }
+  ],
+  "data": {
+    "url": "..."
+  },
+  "macros": {
+    "wait": {
+      "$$exec": {
+        "action": "wait",
+        "args": "$$args"
+      }
+    }
+  },
+  "events": {
+    "action.execute": {
+      "$$exec": { "micro": "pass" }
+    }
+  },
+  "actions": {
+    "start": {
+      "$$exec": {
+        "driver": "web",
+        "action": "initialize",
+        "args": {
+          "url": {
+            "$$join": ["http://", "$$bot.data.url"]
+          }
+        }
+      }
+    },
+    "wait_for_load": {
+      "$$macro": {
+        "target": "wait",
+        "args": {}
+      }
+    },
+    "get_joke_text": {
+      "$$execs": [
+        {
+          "action": "select",
+          "args": {
+            "selector": "a.main-joke"
+          },
+          "store": "joke_text"
+        },
+        {
+          "action": "screenshot",
+          "args": {
+            "full_page": true,
+            "type": "jpeg"
+          },
+          "store": "joke_screenshot",
+          "ignore_errors": true
+        }
+      ]
+    },
+    "send_to_service": {
+      "$$exec": {
+        "driver": "notify",
+        "action": "send",
+        "args": {
+          "client": "...",
+          "text": "$data:joke_text"
+        }
+      }
+    }
+  }
+}
